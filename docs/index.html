@@ -30,16 +30,35 @@
     // URLパラメータから ?log=YYYYMMDD を取得
     const params = new URLSearchParams(location.search);
     const logDate = params.get("log") || "20250418";  // デフォルト値は任意で
-
     const geojsonUrl = `geojson/${logDate}.json`;
 
+    const styleParam = params.get("style") || "streets"; // デフォルトは "streets"
+
+    // スタイルマップ：自由に追加可能
+    const styleMap = {
+      "streets": "mapbox://styles/mapbox/streets-v11",
+      "dark": "mapbox://styles/mapbox/dark-v10",
+      "light": "mapbox://styles/mapbox/light-v10",
+      "satellite": "mapbox://styles/mapbox/satellite-streets-v12"
+    };
+
+    const mapStyle = styleMap[styleParam] || styleMap["streets"];
+
     const map = new mapboxgl.Map({
-      container: 'map',
-      // style: 'mapbox://styles/mapbox/streets-v11',
-      style: 'mapbox://styles/mapbox/dark-v10',
-      center: [135.5, 34.7], // 適当に日本の中央
-      zoom: 5
+      container: "map",
+      style: mapStyle,
+      center: [135.5, 34.7], // 適宜調整
+      zoom: 7
     });
+
+
+    // const map = new mapboxgl.Map({
+    //   container: 'map',
+    //   // style: 'mapbox://styles/mapbox/streets-v11',
+    //   style: 'mapbox://styles/mapbox/dark-v10',
+    //   center: [135.5, 34.7], // 適当に日本の中央
+    //   zoom: 5
+    // });
 
     map.on('load', () => {
       fetch(geojsonUrl)
