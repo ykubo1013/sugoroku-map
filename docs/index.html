@@ -62,19 +62,39 @@
             id: 'trajectory-line',
             type: 'line',
             source: 'trajectory',
+            // paint: {
+            //   'line-color': [
+            //     'interpolate',
+            //     ['linear'],
+            //     ['get', 'alt'],
+            //     0, '#ff0000',      // 赤（低高度）
+            //     10000, '#ffa500',  // オレンジ
+            //     20000, '#ffff00',  // 黄
+            //     30000, '#00ff00',  // 緑
+            //     40000, '#0000ff'   // 青（高高度）
+            //   ],
+            //   'line-width': 1,
+            //   'line-opacity': 0.4   // 薄くして重ねて浮き上がる感じに
+            // }
             paint: {
               'line-color': [
-                'interpolate',
-                ['linear'],
-                ['get', 'alt'],
-                0, '#ff0000',      // 赤（低高度）
-                10000, '#ffa500',  // オレンジ
-                20000, '#ffff00',  // 黄
-                30000, '#00ff00',  // 緑
-                40000, '#0000ff'   // 青（高高度）
+                'interpolate', ['linear'], ['get', 'alt'],
+                0, '#ff0000',       // 低高度：真っ赤
+                10000, '#ffa500',   // オレンジ
+                20000, '#ffff00',   // 黄色
+                30000, '#00ff00',   // 緑
+                40000, '#0000ff'    // 高高度：青
               ],
-              'line-width': 1,
-              'line-opacity': 0.4   // 薄くして重ねて浮き上がる感じに
+              'line-opacity': [
+                'interpolate', ['linear'], ['get', 'alt'],
+                0, 0.4,       // 地上付近：はっきり見える
+                40000, 0.05   // 上空：ふわっと薄く
+              ],
+              'line-width': [
+                'interpolate', ['linear'], ['get', 'alt'],
+                0, 2.5,       // 太く（混雑が重なると濃くなる）
+                40000, 0.8    // 巡航高度は細くてOK
+              ]
             }
           });
 
