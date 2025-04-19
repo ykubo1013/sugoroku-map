@@ -20,7 +20,7 @@
     const params = new URLSearchParams(location.search);
     const logDate = params.get("log") || "20250418";  // デフォルト値は任意で
 
-    const geojsonUrl = `../geojson/${logDate}.json`;
+    const geojsonUrl = `geojson/${logDate}.json`;
 
     const map = new mapboxgl.Map({
       container: 'map',
