@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>空のすご録 - フライト軌跡</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    #map {
+      width: 100%;
+      height: 100vh;
+    }
+  </style>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+</head>
+
+<body>
+  <div id="map"></div>
+  <script>
+    mapboxgl.accessToken = 'pk.eyJ1Ijoic2VlMzAwNTIiLCJhIjoiY2x3cnd1anQzMDFhazJqcHk0Ync3anU1YyJ9.ryhShR_VuA0ynE9d08duQw'; // ← ここに自分のトークン入れてね
+
+    // URLパラメータから ?log=YYYYMMDD を取得
+    const params = new URLSearchParams(location.search);
+    const logDate = params.get("log") || "20250418";  // デフォルト値は任意で
+    const geojsonUrl = `geojson/${logDate}.json`;
+
+    const styleParam = params.get("style") || "streets"; // デフォルトは "streets"
+
+    // スタイルマップ：自由に追加可能
+    const styleMap = {
+      "streets": "mapbox://styles/mapbox/streets-v11",
+      "dark": "mapbox://styles/mapbox/dark-v10",
+      "light": "mapbox://styles/mapbox/light-v10",
+      "satellite": "mapbox://styles/mapbox/satellite-streets-v12"
+    };
+
+    const mapStyle = styleMap[styleParam] || styleMap["streets"];
+
+    const map = new mapboxgl.Map({
+      container: "map",
+      style: mapStyle,
+      center: [135.5, 34.7], // 適宜調整
+      zoom: 7
+    });
+
+
+    // const map = new mapboxgl.Map({
+    //   container: 'map',
+    //   // style: 'mapbox://styles/mapbox/streets-v11',
+    //   style: 'mapbox://styles/mapbox/dark-v10',
+    //   center: [135.5, 34.7], // 適当に日本の中央
+    //   zoom: 5
+    // });
+
+    map.on('load', () => {
+      fetch(geojsonUrl)
+        .then(res => res.json())
+        .then(data => {
+          map.addSource('trajectory', {
+            type: 'geojson',
+            data: data
+          });
+          // map.addLayer({
+          //   id: 'trajectory-line',
+          //   type: 'line',
+          //   source: 'trajectory',
+          //   paint: {
+          //     'line-color': '#f44',
+          //     'line-width': 2
+          //   }
+          // });
+          map.addLayer({
+            id: 'trajectory-line',
+            type: 'line',
+            source: 'trajectory',
+            // paint: {
+            //   'line-color': [
+            //     'interpolate',
+            //     ['linear'],
+            //     ['get', 'alt'],
+            //     0, '#ff0000',      // 赤（低高度）
+            //     10000, '#ffa500',  // オレンジ
+            //     20000, '#ffff00',  // 黄
+            //     30000, '#00ff00',  // 緑
+            //     40000, '#0000ff'   // 青（高高度）
+            //   ],
+            //   'line-width': 1,
+            //   'line-opacity': 0.4   // 薄くして重ねて浮き上がる感じに
+            // }
+            paint: {
+              'line-color': [
+                'interpolate', ['linear'], ['get', 'alt'],
+                0, '#ff0000',       // 低高度：真っ赤
+                10000, '#ffa500',   // オレンジ
+                20000, '#ffff00',   // 黄色
+                30000, '#00ff00',   // 緑
+                40000, '#0000ff'    // 高高度：青
+              ],
+              'line-opacity': [
+                'interpolate', ['linear'], ['get', 'alt'],
+                0, 0.3,       // 地上付近：はっきり見える
+                40000, 0.05   // 上空：ふわっと薄く
+              ],
+              'line-width': [
+                'interpolate', ['linear'], ['get', 'alt'],
+                0, 2.0,       // 太く（混雑が重なると濃くなる）
+                40000, 0.8    // 巡航高度は細くてOK
+              ]
+            }
+          });
+
+          // 自動ズーム
+          const bounds = new mapboxgl.LngLatBounds();
+          data.features.forEach(f => {
+            f.geometry.coordinates.forEach(coord => bounds.extend(coord));
+          });
+          map.fitBounds(bounds, { padding: 40 });
+        });
+    });
+  </script>
+</body>
+
+</html>
