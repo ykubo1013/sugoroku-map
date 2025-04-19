@@ -89,7 +89,10 @@
           data.features.forEach(f => {
             f.geometry.coordinates.forEach(coord => bounds.extend(coord));
           });
-          map.fitBounds(bounds, { padding: 40 });
+          // map.fitBounds(bounds, { padding: 40 });
+          if (!params.has("center") && !params.has("zoom")) {
+            map.fitBounds(bounds, { padding: 40 });
+          }
         });
     });
   </script>
