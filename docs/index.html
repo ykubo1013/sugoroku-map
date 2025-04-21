@@ -28,7 +28,7 @@
     mapboxgl.accessToken = 'pk.eyJ1Ijoic2VlMzAwNTIiLCJhIjoiY2x3cnd1anQzMDFhazJqcHk0Ync3anU1YyJ9.ryhShR_VuA0ynE9d08duQw';
 
     const params = new URLSearchParams(location.search);
-    const logDate = params.get("log") || "20250418";
+    const logDate = params.get("log") || "2025-04-18";
     const styleParam = (params.get("style") || "streets").toLowerCase();
     const centerParam = params.get("center")?.split(",").map(Number) || [135.5, 34.7];
     const zoomParam = parseFloat(params.get("zoom")) || 7;
