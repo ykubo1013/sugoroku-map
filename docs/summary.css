@@ -1,0 +1,100 @@
+body,
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+#map {
+  width: 100%;
+  height: 100vh;
+}
+
+#summary-box {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  max-width: 280px;
+  font-family: sans-serif;
+  z-index: 999;
+}
+
+.summary-block {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.icon {
+  width: 2em;
+  text-align: center;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.text .label {
+  font-weight: 600;
+  margin-bottom: 2px;
+  color: #fff;
+}
+
+.text .value {
+  color: #bbb;
+  padding-left: 0.2em;
+}
+
+.value {
+  display: inline-block;
+  padding-left: 1.7em;
+  color: #bbbbbb;
+  font-weight: 500;
+}
+
+.dim {
+  color: #999999;
+  font-size: 0.95em;
+}
+
+/* 日付ブロックだけちょっと特別感を */
+.date-block {
+  background-color: rgba(255, 255, 255, 0.4);
+  border-radius: 6px;
+  padding: 6px 0px;
+  margin-bottom: 14px;
+}
+
+.date-block .label {
+  font-size: 1.15em;
+  color: #eee;
+  font-weight: 600;
+}
+
+.date-block {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 14px;
+}
+
+.date-input {
+  background: rgba(255, 255, 255, 0.0);
+  color: #eee;
+  font-size: 1.15em;
+  font-weight: 600;
+  font-family: sans-serif;
+  padding: 0px 6px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+input[type="date"]:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}

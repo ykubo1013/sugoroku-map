@@ -17,24 +17,101 @@
       width: 100%;
       height: 100vh;
     }
+
+    #summary-box {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 12px;
+      font-size: 14px;
+      border-radius: 6px;
+      max-width: 280px;
+      font-family: sans-serif;
+      z-index: 999;
+    }
+
+    .value {
+  display: inline-block;
+  padding-left: 1.7em;
+  color: #bbbbbb;  /* ← やさしめグレー */
+  font-weight: 500;
+}
+
+.dim {
+  color: #999999;
+  font-size: 0.95em;
+}
+
+.summary-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.summary-block {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.icon {
+  width: 2em;
+  text-align: center;
+  flex-shrink: 0;
+  padding-top: 2px; /* アイコン縦揃え */
+}
+
+
+.text .label {
+  font-weight: 400;
+  margin-bottom: 2px;
+  color: #fff;
+}
+
+.text .value {
+  color: #bbb;
+  padding-left: 0.2em;
+}
+
+/* 🔷 日付だけちょっと特別感を */
+.date-block {
+  background-color: rgba(255, 255, 255, 0.2);  /* ほんのり白背景 */
+  border-radius: 6px;
+  padding: 6px 0px;
+  margin-bottom: 14px;
+}
+
+.date-block .text .value {
+  font-size: 1.15em;
+  color: #eee;
+  font-weight: 600;
+}
   </style>
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
 </head>
 
 <body>
+  <div id="summary-box">📦 読み込み中...</div>
+
   <div id="map"></div>
   <script>
-    mapboxgl.accessToken = 'pk.eyJ1Ijoic2VlMzAwNTIiLCJhIjoiY2x3cnd1anQzMDFhazJqcHk0Ync3anU1YyJ9.ryhShR_VuA0ynE9d08duQw'; // ← ここに自分のトークン入れてね
+    mapboxgl.accessToken = 'pk.eyJ1Ijoic2VlMzAwNTIiLCJhIjoiY2x3cnd1anQzMDFhazJqcHk0Ync3anU1YyJ9.ryhShR_VuA0ynE9d08duQw';
 
-    // URLパラメータから ?log=YYYYMMDD を取得
     const params = new URLSearchParams(location.search);
-    const logDate = params.get("log") || "20250418";  // デフォルト値は任意で
+    const logDate = params.get("log") || "2025-04-18";
+    const styleParam = (params.get("style") || "streets").toLowerCase();
+    const centerParam = params.get("center")?.split(",").map(Number) || [135.5, 34.7];
+    const zoomParam = parseFloat(params.get("zoom")) || 7;
+
     const geojsonUrl = `geojson/${logDate}.json`;
 
-    const styleParam = params.get("style") || "streets"; // デフォルトは "streets"
-
-    // スタイルマップ：自由に追加可能
     const styleMap = {
       "streets": "mapbox://styles/mapbox/streets-v11",
       "dark": "mapbox://styles/mapbox/dark-v10",
@@ -47,18 +124,9 @@
     const map = new mapboxgl.Map({
       container: "map",
       style: mapStyle,
-      center: [135.5, 34.7], // 適宜調整
-      zoom: 7
+      center: centerParam,
+      zoom: zoomParam
     });
-
-
-    // const map = new mapboxgl.Map({
-    //   container: 'map',
-    //   // style: 'mapbox://styles/mapbox/streets-v11',
-    //   style: 'mapbox://styles/mapbox/dark-v10',
-    //   center: [135.5, 34.7], // 適当に日本の中央
-    //   zoom: 5
-    // });
 
     map.on('load', () => {
       fetch(geojsonUrl)
@@ -68,63 +136,114 @@
             type: 'geojson',
             data: data
           });
-          // map.addLayer({
-          //   id: 'trajectory-line',
-          //   type: 'line',
-          //   source: 'trajectory',
-          //   paint: {
-          //     'line-color': '#f44',
-          //     'line-width': 2
-          //   }
-          // });
           map.addLayer({
             id: 'trajectory-line',
             type: 'line',
             source: 'trajectory',
-            // paint: {
-            //   'line-color': [
-            //     'interpolate',
-            //     ['linear'],
-            //     ['get', 'alt'],
-            //     0, '#ff0000',      // 赤（低高度）
-            //     10000, '#ffa500',  // オレンジ
-            //     20000, '#ffff00',  // 黄
-            //     30000, '#00ff00',  // 緑
-            //     40000, '#0000ff'   // 青（高高度）
-            //   ],
-            //   'line-width': 1,
-            //   'line-opacity': 0.4   // 薄くして重ねて浮き上がる感じに
-            // }
             paint: {
               'line-color': [
                 'interpolate', ['linear'], ['get', 'alt'],
-                0, '#ff0000',       // 低高度：真っ赤
-                10000, '#ffa500',   // オレンジ
-                20000, '#ffff00',   // 黄色
-                30000, '#00ff00',   // 緑
-                40000, '#0000ff'    // 高高度：青
+                0, '#ff0000',
+                10000, '#ffa500',
+                20000, '#ffff00',
+                30000, '#00ff00',
+                40000, '#0000ff'
               ],
               'line-opacity': [
                 'interpolate', ['linear'], ['get', 'alt'],
-                0, 0.3,       // 地上付近：はっきり見える
-                40000, 0.05   // 上空：ふわっと薄く
+                0, 0.3,
+                40000, 0.05
               ],
               'line-width': [
                 'interpolate', ['linear'], ['get', 'alt'],
-                0, 2.0,       // 太く（混雑が重なると濃くなる）
-                40000, 0.8    // 巡航高度は細くてOK
+                0, 2.0,
+                40000, 0.8
               ]
             }
           });
 
-          // 自動ズーム
           const bounds = new mapboxgl.LngLatBounds();
           data.features.forEach(f => {
             f.geometry.coordinates.forEach(coord => bounds.extend(coord));
           });
-          map.fitBounds(bounds, { padding: 40 });
+          // map.fitBounds(bounds, { padding: 40 });
+          if (!params.has("center") && !params.has("zoom")) {
+            map.fitBounds(bounds, { padding: 40 });
+          }
         });
     });
+
+    function getWeekdayLabel(dateStr) {
+      const days = ["日", "月", "火", "水", "木", "金", "土"];
+      const d = new Date(dateStr);  // dateStr = "2025-04-21"
+      return days[d.getDay()];
+    }
+
+    function formatHighlightFlights(text) {
+      return text
+        .split("\n")
+        .map(line => {
+          const match = line.match(/^(\S+).*IKOMA\s+([\d:]+)/);
+          if (match) {
+            return `${match[1]}：IKOMA通過　${match[2]}`;
+          } else {
+            return line; // マッチしなかったらそのまま
+          }
+        })
+        .join("<br>");
+    }
+
+
+    const summaryUrl = `summary/${logDate}.json`;
+    fetch(summaryUrl)
+      .then(res => res.json())
+      .then(summary => {
+        const box = document.getElementById("summary-box");
+        box.innerHTML = `
+        <div class="summary-block date-block">
+          <span class="icon">📅</span>
+          <span class="label"><b>${summary.date}（${getWeekdayLabel(summary.date)}）</b></span>
+        </div>
+
+<div class="summary-block">
+  <div class="icon">✈️</div>
+  <div class="text">
+    <div class="label">総フライト記録数</div>
+    <div class="value">${summary.flight_count}便</div>
+  </div>
+</div>
+
+<div class="summary-block">
+  <div class="icon">🗺️</div>
+  <div class="text">
+    <div class="label">空見の丘公園(10nm)通過</div>
+    <div class="value">${summary.area_count2}便</div>
+  </div>
+</div>
+
+<div class="summary-block">
+  <div class="icon">⛰️</div>
+  <div class="text">
+    <div class="label">一番高いところを飛んでたのは</div>
+    <div class="value">${summary.max_flight}</b><span class="dim"> (${summary.max_altitude} ft)</div>
+  </div>
+</div>
+
+<div class="summary-block">
+  <div class="icon">⛰️</div>
+  <div class="text">
+    <div class="label">今日の最終便対決</div>
+    <div class="value">${formatHighlightFlights(summary.highlight_flight)}</div>
+  </div>
+</div>
+
+      `;
+      })
+      .catch(err => {
+        document.getElementById("summary-box").innerText = "📦 summary 読み込み失敗";
+        console.error("Summary読み込み失敗:", err);
+      });
+
   </script>
 </body>
 
