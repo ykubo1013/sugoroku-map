@@ -40,9 +40,10 @@
       dark: "mapbox://styles/mapbox/dark-v10",
       light: "mapbox://styles/mapbox/light-v10",
       satellite: "mapbox://styles/mapbox/satellite-streets-v12",
+      custom: "mapbox://styles/see30052/cm9tb8jol00dr01sphqrf7hlh",
     };
 
-    const mapStyle = styleMap[styleParam] || styleMap["streets"];
+    const mapStyle = styleMap[styleParam] || styleMap["custom"];
 
     const map = new mapboxgl.Map({
       container: "map",
