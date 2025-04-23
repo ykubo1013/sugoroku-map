@@ -12,14 +12,12 @@
 
 <body>
   <div id="summary-box">
-    <div class="summary-block date-block">
+    <div class="summary-block date-block date-nav">
       <div class="icon">📅</div>
-      <input
-      class="date-input"
-      type="date"
-      id="log-date-picker"
-      onchange="handleDateChange(this.value)"
-    />    </div>
+      <button onclick="shiftDate(-1)">◀️</button>
+      <input class="date-input" type="date" id="log-date-picker" onchange="handleDateChange(this.value)" />
+      <button onclick="shiftDate(1)">▶️</button>
+    </div>
   </div>
 
   <div id="map"></div>
@@ -134,24 +132,36 @@
 
 
     function handleDateChange(value) {
-  console.log("📅 onchange 発火！選択日付:", value);
+      const yyyymmdd = value;
+      const style = new URLSearchParams(location.search).get("style") || "dark";
+      window.location.href = `?log=${yyyymmdd}&style=${style}&center=135.5,34.7&zoom=8.0`;
+    }
 
-  const yyyymmdd = value;
-  const style = new URLSearchParams(location.search).get("style") || "dark";
-  window.location.href = `?log=${yyyymmdd}&style=${style}&center=135.5,34.7&zoom=8.0`;
-}
+    function shiftDate(offset) {
+      const input = document.getElementById("log-date-picker");
+      if (!input || !input.value) return;
+
+      const current = new Date(input.value);
+      current.setDate(current.getDate() + offset);
+
+      const yyyy = current.getFullYear();
+      const mm = String(current.getMonth() + 1).padStart(2, "0");
+      const dd = String(current.getDate()).padStart(2, "0");
+      const next = `${yyyy}-${mm}-${dd}`;
+
+      const style = new URLSearchParams(location.search).get("style") || "dark";
+      window.location.href = `?log=${next}&style=${style}&center=135.5,34.7&zoom=8.0`;
+    }
+
 
     const summaryUrl = `summary/${logDate}.json`;
     fetch(summaryUrl)
       .then((res) => res.json())
       .then((summary) => {
-        console.log("summary.date = ", summary.date);
         const box = document.getElementById("summary-box");
         const input = document.getElementById("log-date-picker"); // 日付ピッカーの要素を取得
-        console.log("🧪 input before =", input.value);
         if (input && summary.date) {
           input.value = summary.date;
-          console.log("🧪 input after =", input.value);
         }
 
         box.innerHTML += `
@@ -187,22 +197,27 @@
               </div>
             </div>
           `;
-          setTimeout(() => {
-  const input = document.getElementById("log-date-picker");
-  if (input) {
-    input.value = summary.date;
-    console.log("🐢 delayed set value:", input.value);
-  }
-}, 100);
+        setTimeout(() => {
+          const input = document.getElementById("log-date-picker");
+          if (input) {
+            input.value = summary.date;
+          }
+        }, 100);
       })
       .catch((err) => {
         console.error("Summary読み込み失敗:", err);
+        setTimeout(() => {
+          const input = document.getElementById("log-date-picker");
+          if (input) {
+            input.value = logDate;  // summaryがない場合は,urlの日付をセット　
+          }
+        }, 100);
         const box = document.getElementById("summary-box");
         box.innerHTML += `
             <div class="summary-block">
               <div class="icon">📦</div>
               <div class="text">
-                <div class="label">Summary読み込み失敗</div>
+                <div class="label">Summaryデータがありません</div>
               </div>
             </div>
           `;

@@ -98,3 +98,24 @@ html {
 input[type="date"]:hover {
   background-color: rgba(255, 255, 255, 0.15);
 }
+
+
+
+.date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+}
+.date-nav button {
+  background: rgba(255, 255, 255, 0.0);
+  border: 1px solid #666;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 4px 10px;
+}
+.date-nav button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
