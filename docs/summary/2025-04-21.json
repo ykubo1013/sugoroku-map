@@ -5,5 +5,15 @@
   "area_count2": 210,
   "max_flight": "TBJ53",
   "max_altitude": 44875,
-  "highlight_flight": "ANA41 20:20 - 20:35 IKOMA 20:32\nJAL139 20:01 - 20:22 IKOMA 20:20"
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:20 - 20:35",
+      "ikoma": "20:32"
+    },
+    "JAL139": {
+      "start_end": "20:01 - 20:22",
+      "ikoma": "20:20"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-04-21&style=custom&center=135.5,34.7&zoom=8"
 }

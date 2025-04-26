@@ -5,5 +5,15 @@
   "area_count2": 219,
   "max_flight": "CPA3485",
   "max_altitude": 44725,
-  "highlight_flight": "ANA41 20:02 - 20:31 IKOMA 20:29\nJAL139 19:53 - 20:09 IKOMA 20:07"
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:02 - 20:31",
+      "ikoma": "20:29"
+    },
+    "JAL139": {
+      "start_end": "19:53 - 20:09",
+      "ikoma": "20:07"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-04-22&style=custom&center=135.5,34.7&zoom=8"
 }
