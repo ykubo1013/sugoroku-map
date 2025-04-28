@@ -61,8 +61,9 @@
       fetch(geojsonUrl)
         .then((res) => res.json())
         .then((data) => {
-          setupFlights(data);
           setupLines(data);
+          setupFlights(data);
+          setupMovingPoints();
           startAnimation();
         });
     });
@@ -129,67 +130,50 @@
       if (!params.has("center") && !params.has("zoom")) {
         map.fitBounds(bounds, { padding: 40 });
       }
-
-
     }
 
     function setupFlights(data) {
-      flights = data.features;
+      flights = data.features.map((f) => ({
+        coords: f.geometry.coordinates,
+        timestamps: f.properties.timestamps
+      }));
 
-      flights.forEach((flight, idx) => {
-        const coords = flight.geometry.coordinates;
-        const timestamps = flight.properties.timestamps;
+      // 仮想時間をデータ中の最小timestampからスタート
+      virtualTime = Math.min(...flights.flatMap(f => f.timestamps));
+    }
 
-        const movingPoint = {
+    function setupMovingPoints() {
+      map.addSource("moving-points", {
+        type: "geojson",
+        data: {
           type: "FeatureCollection",
-          features: [{
-            type: "Feature",
-            geometry: {
-              type: "Point",
-              coordinates: coords[0]
-            }
-          }]
-        };
-
-        const sourceId = `moving-point-${idx}`;
-
-        map.addSource(sourceId, {
-          type: "geojson",
-          data: movingPoint
-        });
-
-        map.addLayer({
-          id: sourceId,
-          type: "circle",
-          source: sourceId,
-          paint: {
-            "circle-radius": 4,
-            "circle-color": "#00ffff",
-            "circle-opacity": 0.7,
-          }
-        });
-
-        movingPoints.push({
-          sourceId: sourceId,
-          coords: coords,
-          timestamps: timestamps
-        });
+          features: []
+        }
       });
 
-      // 仮想時間をデータの最初に揃える
-      virtualTime = Math.min(...flights.flatMap(f => f.properties.timestamps));
+      map.addLayer({
+        id: "moving-points-layer",
+        type: "circle",
+        source: "moving-points",
+        paint: {
+          "circle-radius": 4,
+          "circle-color": "#00ffff",
+          "circle-opacity": 0.7,
+        }
+      });
     }
+
 
     function animate() {
       if (!animationStarted) return;
 
-      virtualTime += 1; // 仮想時刻を1秒ずつ進める
+      virtualTime += 1; // 仮想時間を1秒進める
 
-      movingPoints.forEach((flight) => {
+      const activePoints = [];
+
+      flights.forEach((flight) => {
         const coords = flight.coords;
         const timestamps = flight.timestamps;
-
-        let found = false;
 
         for (let i = 0; i < timestamps.length - 1; i++) {
           const t0 = timestamps[i];
@@ -200,35 +184,26 @@
             const lon = coords[i][0] + (coords[i + 1][0] - coords[i][0]) * ratio;
             const lat = coords[i][1] + (coords[i + 1][1] - coords[i][1]) * ratio;
 
-            const newPoint = {
-              type: "FeatureCollection",
-              features: [{
-                type: "Feature",
-                geometry: {
-                  type: "Point",
-                  coordinates: [lon, lat]
-                }
-              }]
-            };
-
-            map.getSource(flight.sourceId).setData(newPoint);
-            found = true;
+            activePoints.push({
+              type: "Feature",
+              geometry: {
+                type: "Point",
+                coordinates: [lon, lat]
+              }
+            });
             break;
           }
         }
+      });
 
-        if (!found) {
-          // 時刻外なら点を消す（空のFeatureCollection）
-          map.getSource(flight.sourceId).setData({
-            type: "FeatureCollection",
-            features: []
-          });
-        }
+      map.getSource("moving-points").setData({
+        type: "FeatureCollection",
+        features: activePoints
       });
 
       requestAnimationFrame(animate);
     }
-
+    
     function startAnimation() {
       animationStarted = true;
       animate();
