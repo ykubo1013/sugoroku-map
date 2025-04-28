@@ -101,6 +101,23 @@
             },
           });
 
+          map.on('click', 'trajectory-line', (e) => {
+            if (e.features.length > 0) {
+              const flight = e.features[0].properties.flight || "便名なし";
+              new mapboxgl.Popup()
+                .setLngLat(e.lngLat)
+                .setHTML(`<strong>${flight}</strong>`)
+                .addTo(map);
+            }
+          });
+          map.on('mouseenter', 'trajectory-line', () => {
+            map.getCanvas().style.cursor = 'pointer';
+          });
+
+          map.on('mouseleave', 'trajectory-line', () => {
+            map.getCanvas().style.cursor = '';
+          });
+
           const bounds = new mapboxgl.LngLatBounds();
           data.features.forEach((f) => {
             f.geometry.coordinates.forEach((coord) => bounds.extend(coord));
