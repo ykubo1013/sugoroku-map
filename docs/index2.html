@@ -52,141 +52,187 @@
       zoom: zoomParam,
     });
 
+    let flights = [];
+    let movingPoints = [];
+    let virtualTime = 0;
+    let animationStarted = false;
+
     map.on("load", () => {
       fetch(geojsonUrl)
         .then((res) => res.json())
         .then((data) => {
-          map.addSource("trajectory", {
-            type: "geojson",
-            data: data,
-          });
-          map.addLayer({
-            id: "trajectory-line",
-            type: "line",
-            source: "trajectory",
-            paint: {
-              "line-color": [
-                "interpolate",
-                ["linear"],
-                ["get", "alt"],
-                0,
-                "#ff0000",
-                10000,
-                "#ffa500",
-                20000,
-                "#ffff00",
-                30000,
-                "#00ff00",
-                40000,
-                "#0000ff",
-              ],
-              "line-opacity": [
-                "interpolate",
-                ["linear"],
-                ["get", "alt"],
-                0,
-                0.3,
-                40000,
-                0.05,
-              ],
-              "line-width": [
-                "interpolate",
-                ["linear"],
-                ["get", "alt"],
-                0,
-                2.0,
-                40000,
-                0.8,
-              ],
-            },
-          });
-
-          // lineをクリックしたときのポップアップを追加
-          map.on('click', 'trajectory-line', (e) => {
-            if (e.features.length > 0) {
-              const flight = e.features[0].properties.flight || "便名なし";
-              new mapboxgl.Popup()
-                .setLngLat(e.lngLat)
-                .setHTML(`<strong>${flight}</strong>`)
-                .addTo(map);
-            }
-          });
-          map.on('mouseenter', 'trajectory-line', () => {
-            map.getCanvas().style.cursor = 'pointer';
-          });
-
-          map.on('mouseleave', 'trajectory-line', () => {
-            map.getCanvas().style.cursor = '';
-          });
-
-          // 表示領域を調整する
-          const bounds = new mapboxgl.LngLatBounds();
-          data.features.forEach((f) => {
-            f.geometry.coordinates.forEach((coord) => bounds.extend(coord));
-          });
-          if (!params.has("center") && !params.has("zoom")) {
-            map.fitBounds(bounds, { padding: 40 });
-          }
-
-          // フライトアニメーションのためのlayerを追加・試作版
-          const firstFlight = data.features[0];
-          const timestamps = firstFlight.properties.timestamps;
-          const coords = firstFlight.geometry.coordinates;
-
-          const pointGeoJSON = {
-            type: "FeatureCollection",
-            features: [{
-              type: "Feature",
-              geometry: {
-                type: "Point",
-                coordinates: coords[0]
-              }
-            }]
-          };
-
-          map.addSource("moving-point", {
-            type: "geojson",
-            data: pointGeoJSON
-          });
-
-          map.addLayer({
-            id: "moving-point-layer",
-            type: "circle",
-            source: "moving-point",
-            paint: {
-              "circle-radius": 6,
-              "circle-color": "#00ffff",
-              "circle-opacity": 0.8,
-            }
-          });
-
-          let virtualTime = timestamps[0]; // 仮想タイマー開始（エポック秒）
-
-          function animate() {
-            virtualTime += 1;  // 1秒進める（必要なら倍速調整できる）
-
-            // 現在の時間に最も近いセグメントを探す
-            for (let i = 0; i < timestamps.length - 1; i++) {
-              const t0 = timestamps[i];
-              const t1 = timestamps[i + 1];
-
-              if (virtualTime >= t0 && virtualTime < t1) {
-                const ratio = (virtualTime - t0) / (t1 - t0);
-                const lon = coords[i][0] + (coords[i + 1][0] - coords[i][0]) * ratio;
-                const lat = coords[i][1] + (coords[i + 1][1] - coords[i][1]) * ratio;
-
-                pointGeoJSON.features[0].geometry.coordinates = [lon, lat];
-                map.getSource("moving-point").setData(pointGeoJSON);
-                break;
-              }
-            }
-
-            requestAnimationFrame(animate);
-          }
-          animate();
-
+          setupFlights(data);
+          setupLines(data);
+          startAnimation();
         });
     });
+
+    function setupLines(data) {
+      map.addSource("trajectory", {
+        type: "geojson",
+        data: data,
+      });
+      map.addLayer({
+        id: "trajectory-line",
+        type: "line",
+        source: "trajectory",
+        paint: {
+          "line-color": [
+            "interpolate",
+            ["linear"],
+            ["get", "alt"],
+            0, "#ff0000",
+            10000, "#ffa500",
+            20000, "#ffff00",
+            30000, "#00ff00",
+            40000, "#0000ff",
+          ],
+          "line-opacity": [
+            "interpolate",
+            ["linear"],
+            ["get", "alt"],
+            0, 0.3,
+            40000, 0.05,
+          ],
+          "line-width": [
+            "interpolate",
+            ["linear"],
+            ["get", "alt"],
+            0, 2.0,
+            40000, 0.8,
+          ],
+        },
+      });
+
+      // lineをクリックしたときのポップアップを追加
+      map.on('click', 'trajectory-line', (e) => {
+        if (e.features.length > 0) {
+          const flight = e.features[0].properties.flight || "便名なし";
+          new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(`<strong>${flight}</strong>`)
+            .addTo(map);
+        }
+      });
+      map.on('mouseenter', 'trajectory-line', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+
+      map.on('mouseleave', 'trajectory-line', () => {
+        map.getCanvas().style.cursor = '';
+      });
+      // 表示領域を調整する
+      const bounds = new mapboxgl.LngLatBounds();
+      data.features.forEach((f) => {
+        f.geometry.coordinates.forEach((coord) => bounds.extend(coord));
+      });
+      if (!params.has("center") && !params.has("zoom")) {
+        map.fitBounds(bounds, { padding: 40 });
+      }
+
+
+    }
+
+    function setupFlights(data) {
+      flights = data.features;
+
+      flights.forEach((flight, idx) => {
+        const coords = flight.geometry.coordinates;
+        const timestamps = flight.properties.timestamps;
+
+        const movingPoint = {
+          type: "FeatureCollection",
+          features: [{
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: coords[0]
+            }
+          }]
+        };
+
+        const sourceId = `moving-point-${idx}`;
+
+        map.addSource(sourceId, {
+          type: "geojson",
+          data: movingPoint
+        });
+
+        map.addLayer({
+          id: sourceId,
+          type: "circle",
+          source: sourceId,
+          paint: {
+            "circle-radius": 4,
+            "circle-color": "#00ffff",
+            "circle-opacity": 0.7,
+          }
+        });
+
+        movingPoints.push({
+          sourceId: sourceId,
+          coords: coords,
+          timestamps: timestamps
+        });
+      });
+
+      // 仮想時間をデータの最初に揃える
+      virtualTime = Math.min(...flights.flatMap(f => f.properties.timestamps));
+    }
+
+    function animate() {
+      if (!animationStarted) return;
+
+      virtualTime += 1; // 仮想時刻を1秒ずつ進める
+
+      movingPoints.forEach((flight) => {
+        const coords = flight.coords;
+        const timestamps = flight.timestamps;
+
+        let found = false;
+
+        for (let i = 0; i < timestamps.length - 1; i++) {
+          const t0 = timestamps[i];
+          const t1 = timestamps[i + 1];
+
+          if (virtualTime >= t0 && virtualTime < t1) {
+            const ratio = (virtualTime - t0) / (t1 - t0);
+            const lon = coords[i][0] + (coords[i + 1][0] - coords[i][0]) * ratio;
+            const lat = coords[i][1] + (coords[i + 1][1] - coords[i][1]) * ratio;
+
+            const newPoint = {
+              type: "FeatureCollection",
+              features: [{
+                type: "Feature",
+                geometry: {
+                  type: "Point",
+                  coordinates: [lon, lat]
+                }
+              }]
+            };
+
+            map.getSource(flight.sourceId).setData(newPoint);
+            found = true;
+            break;
+          }
+        }
+
+        if (!found) {
+          // 時刻外なら点を消す（空のFeatureCollection）
+          map.getSource(flight.sourceId).setData({
+            type: "FeatureCollection",
+            features: []
+          });
+        }
+      });
+
+      requestAnimationFrame(animate);
+    }
+
+    function startAnimation() {
+      animationStarted = true;
+      animate();
+    }
 
 
 
