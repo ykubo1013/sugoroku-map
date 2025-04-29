@@ -13,7 +13,7 @@
 <body>
   <div id="summary-box">
     <div class="summary-block date-block date-nav">
-      <div class="icon">📅</div>
+      <button id="summary-button" onclick="summary_open_close()">▲</button>
       <button onclick="shiftDate(-1)">◀️</button>
       <input class="date-input" type="date" id="log-date-picker" onchange="handleDateChange(this.value)" />
       <button onclick="shiftDate(1)">▶️</button>
@@ -52,141 +52,210 @@
       zoom: zoomParam,
     });
 
+    let flights = [];
+    let movingPoints = [];
+    let virtualTime = 0;
+    let animationStarted = false;
+    let startEpoch = 0;
+    let endEpoch = 0;
+    let speedMultiplier = 120; // 仮想時間進み方（例：60倍速＝リアル1秒で仮想1分）
+    let virtualTimeDisplay = null;
+    let pointsVisible = true;
+
     map.on("load", () => {
       fetch(geojsonUrl)
         .then((res) => res.json())
         .then((data) => {
-          map.addSource("trajectory", {
-            type: "geojson",
-            data: data,
-          });
-          map.addLayer({
-            id: "trajectory-line",
-            type: "line",
-            source: "trajectory",
-            paint: {
-              "line-color": [
-                "interpolate",
-                ["linear"],
-                ["get", "alt"],
-                0,
-                "#ff0000",
-                10000,
-                "#ffa500",
-                20000,
-                "#ffff00",
-                30000,
-                "#00ff00",
-                40000,
-                "#0000ff",
-              ],
-              "line-opacity": [
-                "interpolate",
-                ["linear"],
-                ["get", "alt"],
-                0,
-                0.3,
-                40000,
-                0.05,
-              ],
-              "line-width": [
-                "interpolate",
-                ["linear"],
-                ["get", "alt"],
-                0,
-                2.0,
-                40000,
-                0.8,
-              ],
-            },
-          });
+          setupLines(data);
+          setupFlights(data);
+          setupMovingPoints();
+          // ここではデータをセットするだけにして，時刻範囲の設定とアニメーション開始はSummary読み込み後に行う
+        });
+    });
 
-          // lineをクリックしたときのポップアップを追加
-          map.on('click', 'trajectory-line', (e) => {
-            if (e.features.length > 0) {
-              const flight = e.features[0].properties.flight || "便名なし";
-              new mapboxgl.Popup()
-                .setLngLat(e.lngLat)
-                .setHTML(`<strong>${flight}</strong>`)
-                .addTo(map);
-            }
-          });
-          map.on('mouseenter', 'trajectory-line', () => {
-            map.getCanvas().style.cursor = 'pointer';
-          });
+    function setupLines(data) {
+      map.addSource("trajectory", {
+        type: "geojson",
+        data: data,
+      });
+      map.addLayer({
+        id: "trajectory-line",
+        type: "line",
+        source: "trajectory",
+        paint: {
+          "line-color": [
+            "interpolate",
+            ["linear"],
+            ["get", "alt"],
+            0, "#ff0000",
+            10000, "#ffa500",
+            20000, "#ffff00",
+            30000, "#00ff00",
+            40000, "#0000ff",
+          ],
+          "line-opacity": [
+            "interpolate",
+            ["linear"],
+            ["get", "alt"],
+            0, 0.3,
+            40000, 0.05,
+          ],
+          "line-width": [
+            "interpolate",
+            ["linear"],
+            ["get", "alt"],
+            0, 2.0,
+            40000, 0.8,
+          ],
+        },
+      });
 
-          map.on('mouseleave', 'trajectory-line', () => {
-            map.getCanvas().style.cursor = '';
-          });
+      // lineをクリックしたときのポップアップを追加
+      map.on('click', 'trajectory-line', (e) => {
+        if (e.features.length > 0) {
+          const flight = e.features[0].properties.flight || "便名なし";
+          new mapboxgl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(`<strong>${flight}</strong>`)
+            .addTo(map);
+        }
+      });
+      map.on('mouseenter', 'trajectory-line', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
 
-          // 表示領域を調整する
-          const bounds = new mapboxgl.LngLatBounds();
-          data.features.forEach((f) => {
-            f.geometry.coordinates.forEach((coord) => bounds.extend(coord));
-          });
-          if (!params.has("center") && !params.has("zoom")) {
-            map.fitBounds(bounds, { padding: 40 });
-          }
+      map.on('mouseleave', 'trajectory-line', () => {
+        map.getCanvas().style.cursor = '';
+      });
+      // 表示領域を調整する
+      const bounds = new mapboxgl.LngLatBounds();
+      data.features.forEach((f) => {
+        f.geometry.coordinates.forEach((coord) => bounds.extend(coord));
+      });
+      if (!params.has("center") && !params.has("zoom")) {
+        map.fitBounds(bounds, { padding: 40 });
+      }
+    }
 
-          // フライトアニメーションのためのlayerを追加・試作版
-          const firstFlight = data.features[0];
-          const timestamps = firstFlight.properties.timestamps;
-          const coords = firstFlight.geometry.coordinates;
+    function setupFlights(data) {
+      flights = data.features.map((f) => ({
+        coords: f.geometry.coordinates,
+        timestamps: f.properties.timestamps
+      }));
+      // 仮想時間をデータ中の最小timestampからスタート
+      // virtualTime = Math.min(...flights.flatMap(f => f.timestamps));
+      // console.log("サンプル flight hex:", flights[0]);
+      // console.log("サンプル flight timestamps[0]:", flights[0].timestamps[0]);
+      // console.log("ISO形式:", new Date(flights[0].timestamps[0] * 1000).toISOString());
+    }
 
-          const pointGeoJSON = {
-            type: "FeatureCollection",
-            features: [{
+    function setupMovingPoints() {
+      map.addSource("moving-points", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: []
+        }
+      });
+
+      map.addLayer({
+        id: "moving-points-layer",
+        type: "circle",
+        source: "moving-points",
+        paint: {
+          "circle-radius": 4,
+          "circle-color": "#00ffff",
+          "circle-opacity": 0.7,
+        }
+      });
+    }
+
+    // 時刻範囲を計算する関数
+    function setupTimeRange(dateStr) {
+      const [yyyy, mm, dd] = dateStr.split("-").map(Number);
+      startEpoch = Date.UTC(yyyy, mm - 1, dd - 1, 22, 0, 0) / 1000;  // 前日22:00 UTC
+      endEpoch = Date.UTC(yyyy, mm - 1, dd, 13, 0, 0) / 1000;         // 当日13:00 UTC
+      virtualTime = startEpoch;
+      // console.log("時刻範囲:", startEpoch, endEpoch);
+      // console.log("スタート時刻:", new Date(startEpoch * 1000).toISOString());
+    }
+
+    function animate() {
+      if (!animationStarted) return;
+      const source = map.getSource("moving-points");
+      if (!source) {
+        // console.warn("moving-points Sourceがまだ準備できていません。アニメーション停止中。");
+        setTimeout(() => {
+          requestAnimationFrame(animate);
+        }, 200); // 少し待ってリトライ
+        return;
+      }
+
+      virtualTime += speedMultiplier / 60; // 仮想時間を速度倍率に応じて進める（1フレームあたり）
+
+      if (virtualTime >= endEpoch) {  // 終了時刻を超えたら，時間をリセットしてループ
+        virtualTime = startEpoch;
+      }
+
+      // 💬 仮想時刻を画面にリアルタイム表示
+      const timeStr = new Date(virtualTime * 1000).toLocaleString("ja-JP", {
+        // year: "numeric",
+        // month: "2-digit",
+        // day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+        timeZone: "Asia/Tokyo"
+      }) + " (JST)";
+      if (virtualTimeDisplay) {
+        virtualTimeDisplay.textContent = timeStr;
+      } else {
+        const dom = document.getElementById("virtual-time");
+        if (dom) {
+          virtualTimeDisplay = dom;
+          virtualTimeDisplay.textContent = timeStr;
+        }
+      }
+
+      const activePoints = [];
+
+      flights.forEach((flight) => {
+        const coords = flight.coords;
+        const timestamps = flight.timestamps;
+
+        for (let i = 0; i < timestamps.length - 1; i++) {
+          const t0 = timestamps[i];
+          const t1 = timestamps[i + 1];
+
+          if (virtualTime >= t0 && virtualTime < t1) {
+            const ratio = (virtualTime - t0) / (t1 - t0);
+            const lon = coords[i][0] + (coords[i + 1][0] - coords[i][0]) * ratio;
+            const lat = coords[i][1] + (coords[i + 1][1] - coords[i][1]) * ratio;
+
+            activePoints.push({
               type: "Feature",
               geometry: {
                 type: "Point",
-                coordinates: coords[0]
+                coordinates: [lon, lat]
               }
-            }]
-          };
-
-          map.addSource("moving-point", {
-            type: "geojson",
-            data: pointGeoJSON
-          });
-
-          map.addLayer({
-            id: "moving-point-layer",
-            type: "circle",
-            source: "moving-point",
-            paint: {
-              "circle-radius": 6,
-              "circle-color": "#00ffff",
-              "circle-opacity": 0.8,
-            }
-          });
-
-          let virtualTime = timestamps[0]; // 仮想タイマー開始（エポック秒）
-
-          function animate() {
-            virtualTime += 1;  // 1秒進める（必要なら倍速調整できる）
-
-            // 現在の時間に最も近いセグメントを探す
-            for (let i = 0; i < timestamps.length - 1; i++) {
-              const t0 = timestamps[i];
-              const t1 = timestamps[i + 1];
-
-              if (virtualTime >= t0 && virtualTime < t1) {
-                const ratio = (virtualTime - t0) / (t1 - t0);
-                const lon = coords[i][0] + (coords[i + 1][0] - coords[i][0]) * ratio;
-                const lat = coords[i][1] + (coords[i + 1][1] - coords[i][1]) * ratio;
-
-                pointGeoJSON.features[0].geometry.coordinates = [lon, lat];
-                map.getSource("moving-point").setData(pointGeoJSON);
-                break;
-              }
-            }
-
-            requestAnimationFrame(animate);
+            });
+            break;
           }
-          animate();
+        }
+      });
 
-        });
-    });
+      map.getSource("moving-points").setData({
+        type: "FeatureCollection",
+        features: activePoints
+      });
+
+      requestAnimationFrame(animate);
+    }
+
+    function startAnimation() {
+      animationStarted = true;
+      animate();
+    }
 
 
 
@@ -234,6 +303,38 @@
       window.location.href = `?log=${next}&style=${style}&center=135.5,34.7&zoom=8.0`;
     }
 
+    function animation_start_stop() {
+      // console.log("アニメーション開始/停止ボタンが押されました。");
+      const button = document.getElementById("toggle-animation");
+      animationStarted = !animationStarted;
+      button.textContent = animationStarted ? "⏸️ Stop" : "▶️ Play";
+      if (animationStarted) animate();
+    }
+
+    function summary_open_close() {
+      // console.log("Summaryボタンが押されました。");
+      const body  = document.getElementById("summary-closeable-box");
+      const btn = document.getElementById("summary-button");
+      if (body.style.display === "none") {
+        body.style.display = "block";
+        btn.textContent = "▲";  // ←展開中は上向き三角
+      } else {
+        body.style.display = "none";
+        btn.textContent = "▼";  // ←たたんでる時は下向き三角
+      }
+    }
+
+    function points_show_hide() {
+      console.log("ポイント表示/非表示ボタンが押されました。");
+      pointsVisible = !pointsVisible;
+      map.setLayoutProperty(
+        "moving-points-layer",
+        "visibility",
+        pointsVisible ? "visible" : "none"
+      );
+      const togglePoints = document.getElementById("toggle-points");
+      togglePoints.textContent = pointsVisible ? "🙈 Marker OFF" : "👀 Marker ON";
+    }
 
     const summaryUrl = `summary/${logDate}.json`;
     fetch(summaryUrl)
@@ -243,39 +344,53 @@
         const input = document.getElementById("log-date-picker"); // 日付ピッカーの要素を取得
         if (input && summary.date) {
           input.value = summary.date;
+          setupTimeRange(summary.date);   // 時間範囲を設定
+          startAnimation();               // アニメーション開始  
         }
 
         box.innerHTML += `
             <div class="summary-block">
-              <div class="icon">✈️</div>
+              <div class="icon">🕑</div>
               <div class="text">
-                <div class="label">総フライト記録数</div>
-                <div class="value">${summary.flight_count}便</div>
+                <div class="label">
+                  <span id="virtual-time">時刻</span>
+                  <button id="toggle-animation" class="animation-button" onclick="animation_start_stop()">⏸️ Stop</button>
+                  <button id="toggle-points" class="animation-button" onclick="points_show_hide()">🙈 No marker</button>
+                </div>
               </div>
             </div>
-
-            <div class="summary-block">
-              <div class="icon">🗺️</div>
-              <div class="text">
-                <div class="label">空見の丘公園(10nm)通過</div>
-                <div class="value">${summary.area_count2}便</div>
+            <div id="summary-closeable-box">
+              <div class="summary-block">
+                <div class="icon">✈️</div>
+                <div class="text">
+                  <div class="label">総フライト記録数</div>
+                  <div class="value">${summary.flight_count}便</div>
+                </div>
               </div>
-            </div>
 
-            <div class="summary-block">
-              <div class="icon">⛰️</div>
-              <div class="text">
-                <div class="label">一番高いところを飛んでたのは</div>
-                <div class="value">${summary.max_flight}</b><span class="dim"> (${summary.max_altitude} ft)</div>
+              <div class="summary-block">
+                <div class="icon">🗺️</div>
+                <div class="text">
+                  <div class="label">空見の丘公園(10nm)通過</div>
+                  <div class="value">${summary.area_count2}便</div>
+                </div>
               </div>
-            </div>
 
-            <div class="summary-block">
-              <div class="icon">🌟</div>
-              <div class="text">
-                <div class="label">今日の最終便対決</div>
-                <div class="value">ANA41のIKOMA通過：${summary.focus_info.ANA41.ikoma}</div>
-                <div class="value">JAL139のIKOMA通過：${summary.focus_info.JAL139.ikoma}</div>
+              <div class="summary-block">
+                <div class="icon">⛰️</div>
+                <div class="text">
+                  <div class="label">一番高いところを飛んでたのは</div>
+                  <div class="value">${summary.max_flight}</b><span class="dim"> (${summary.max_altitude} ft)</div>
+                </div>
+              </div>
+
+              <div class="summary-block">
+                <div class="icon">🌟</div>
+                <div class="text">
+                  <div class="label">今日の最終便対決</div>
+                  <div class="value">ANA41のIKOMA通過：${summary.focus_info.ANA41.ikoma}</div>
+                  <div class="value">JAL139のIKOMA通過：${summary.focus_info.JAL139.ikoma}</div>
+                </div>
               </div>
             </div>
           `;
@@ -305,6 +420,9 @@
           `;
       });
   </script>
+
+
+
 </body>
 
 </html>

@@ -39,6 +39,13 @@ html {
   padding-top: 2px;
 }
 
+.icon-summary {
+  width: 2em;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+
 .text .label {
   font-weight: 600;
   margin-bottom: 2px;
@@ -89,7 +96,7 @@ html {
   font-size: 1.15em;
   font-weight: 600;
   font-family: sans-serif;
-  padding: 0px 6px;
+  padding: 0px 3px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
@@ -119,3 +126,35 @@ input[type="date"]:hover {
 .date-nav button:hover {
   background: rgba(255, 255, 255, 0.15);
 }
+
+/* .animation-button {
+  background: rgba(255, 255, 255, 0.0);
+  border: 1px solid #666;
+  border-radius: 6px;
+  margin-left: 5px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0px 10px;
+} */
+
+
+.animation-button {
+  font-size: 12px;
+  padding: 3px 8px;
+  background: #0088cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.animation-button:hover {
+  background: #006fa6;
+}
+
+.animation-button:active {
+  background: #005c8c;
+}
+

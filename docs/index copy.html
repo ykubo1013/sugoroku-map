@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>空のすご録 - フライト軌跡</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+  <link rel="stylesheet" href="summary.css" />
+</head>
+
+<body>
+  <div id="summary-box">
+    <div class="summary-block date-block date-nav">
+      <div class="icon">📅</div>
+      <button onclick="shiftDate(-1)">◀️</button>
+      <input class="date-input" type="date" id="log-date-picker" onchange="handleDateChange(this.value)" />
+      <button onclick="shiftDate(1)">▶️</button>
+    </div>
+  </div>
+
+  <div id="map"></div>
+  <script>
+    mapboxgl.accessToken =
+      "pk.eyJ1Ijoic2VlMzAwNTIiLCJhIjoiY2x3cnd1anQzMDFhazJqcHk0Ync3anU1YyJ9.ryhShR_VuA0ynE9d08duQw";
+
+    const params = new URLSearchParams(location.search);
+    const logDate = params.get("log") || "2025-04-21";
+    const styleParam = (params.get("style") || "streets").toLowerCase();
+    const centerParam = params.get("center")?.split(",").map(Number) || [
+      135.5, 34.7,
+    ];
+    const zoomParam = parseFloat(params.get("zoom")) || 7;
+
+    const geojsonUrl = `geojson/${logDate}.json`;
+
+    const styleMap = {
+      streets: "mapbox://styles/mapbox/streets-v11",
+      dark: "mapbox://styles/mapbox/dark-v10",
+      light: "mapbox://styles/mapbox/light-v10",
+      satellite: "mapbox://styles/mapbox/satellite-streets-v12",
+      custom: "mapbox://styles/see30052/cm9tb8jol00dr01sphqrf7hlh",
+    };
+
+    const mapStyle = styleMap[styleParam] || styleMap["custom"];
+
+    const map = new mapboxgl.Map({
+      container: "map",
+      style: mapStyle,
+      center: centerParam,
+      zoom: zoomParam,
+    });
+
+    map.on("load", () => {
+      fetch(geojsonUrl)
+        .then((res) => res.json())
+        .then((data) => {
+          map.addSource("trajectory", {
+            type: "geojson",
+            data: data,
+          });
+          map.addLayer({
+            id: "trajectory-line",
+            type: "line",
+            source: "trajectory",
+            paint: {
+              "line-color": [
+                "interpolate",
+                ["linear"],
+                ["get", "alt"],
+                0,
+                "#ff0000",
+                10000,
+                "#ffa500",
+                20000,
+                "#ffff00",
+                30000,
+                "#00ff00",
+                40000,
+                "#0000ff",
+              ],
+              "line-opacity": [
+                "interpolate",
+                ["linear"],
+                ["get", "alt"],
+                0,
+                0.3,
+                40000,
+                0.05,
+              ],
+              "line-width": [
+                "interpolate",
+                ["linear"],
+                ["get", "alt"],
+                0,
+                2.0,
+                40000,
+                0.8,
+              ],
+            },
+          });
+
+          // lineをクリックしたときのポップアップを追加
+          map.on('click', 'trajectory-line', (e) => {
+            if (e.features.length > 0) {
+              const flight = e.features[0].properties.flight || "便名なし";
+              new mapboxgl.Popup()
+                .setLngLat(e.lngLat)
+                .setHTML(`<strong>${flight}</strong>`)
+                .addTo(map);
+            }
+          });
+          map.on('mouseenter', 'trajectory-line', () => {
+            map.getCanvas().style.cursor = 'pointer';
+          });
+
+          map.on('mouseleave', 'trajectory-line', () => {
+            map.getCanvas().style.cursor = '';
+          });
+
+          // 表示領域を調整する
+          const bounds = new mapboxgl.LngLatBounds();
+          data.features.forEach((f) => {
+            f.geometry.coordinates.forEach((coord) => bounds.extend(coord));
+          });
+          if (!params.has("center") && !params.has("zoom")) {
+            map.fitBounds(bounds, { padding: 40 });
+          }
+
+          // フライトアニメーションのためのlayerを追加・試作版
+          const firstFlight = data.features[0];
+          const timestamps = firstFlight.properties.timestamps;
+          const coords = firstFlight.geometry.coordinates;
+
+          const pointGeoJSON = {
+            type: "FeatureCollection",
+            features: [{
+              type: "Feature",
+              geometry: {
+                type: "Point",
+                coordinates: coords[0]
+              }
+            }]
+          };
+
+          map.addSource("moving-point", {
+            type: "geojson",
+            data: pointGeoJSON
+          });
+
+          map.addLayer({
+            id: "moving-point-layer",
+            type: "circle",
+            source: "moving-point",
+            paint: {
+              "circle-radius": 6,
+              "circle-color": "#00ffff",
+              "circle-opacity": 0.8,
+            }
+          });
+
+          let virtualTime = timestamps[0]; // 仮想タイマー開始（エポック秒）
+
+          function animate() {
+            virtualTime += 1;  // 1秒進める（必要なら倍速調整できる）
+
+            // 現在の時間に最も近いセグメントを探す
+            for (let i = 0; i < timestamps.length - 1; i++) {
+              const t0 = timestamps[i];
+              const t1 = timestamps[i + 1];
+
+              if (virtualTime >= t0 && virtualTime < t1) {
+                const ratio = (virtualTime - t0) / (t1 - t0);
+                const lon = coords[i][0] + (coords[i + 1][0] - coords[i][0]) * ratio;
+                const lat = coords[i][1] + (coords[i + 1][1] - coords[i][1]) * ratio;
+
+                pointGeoJSON.features[0].geometry.coordinates = [lon, lat];
+                map.getSource("moving-point").setData(pointGeoJSON);
+                break;
+              }
+            }
+
+            requestAnimationFrame(animate);
+          }
+          animate();
+
+        });
+    });
+
+
+
+
+    function getWeekdayLabel(dateStr) {
+      const days = ["日", "月", "火", "水", "木", "金", "土"];
+      const d = new Date(dateStr);
+      return days[d.getDay()];
+    }
+
+    function formatHighlightFlights(text) {
+      return text
+        .split("\n")
+        .map((line) => {
+          const match = line.match(/^(\S+).*IKOMA\s+([\d:]+)/);
+          if (match) {
+            return `${match[1]}：IKOMA通過　${match[2]}`;
+          } else {
+            return line;
+          }
+        })
+        .join("<br>");
+    }
+
+
+    function handleDateChange(value) {
+      const yyyymmdd = value;
+      const style = new URLSearchParams(location.search).get("style") || "dark";
+      window.location.href = `?log=${yyyymmdd}&style=${style}&center=135.5,34.7&zoom=8.0`;
+    }
+
+    function shiftDate(offset) {
+      const input = document.getElementById("log-date-picker");
+      if (!input || !input.value) return;
+
+      const current = new Date(input.value);
+      current.setDate(current.getDate() + offset);
+
+      const yyyy = current.getFullYear();
+      const mm = String(current.getMonth() + 1).padStart(2, "0");
+      const dd = String(current.getDate()).padStart(2, "0");
+      const next = `${yyyy}-${mm}-${dd}`;
+
+      const style = new URLSearchParams(location.search).get("style") || "dark";
+      window.location.href = `?log=${next}&style=${style}&center=135.5,34.7&zoom=8.0`;
+    }
+
+
+    const summaryUrl = `summary/${logDate}.json`;
+    fetch(summaryUrl)
+      .then((res) => res.json())
+      .then((summary) => {
+        const box = document.getElementById("summary-box");
+        const input = document.getElementById("log-date-picker"); // 日付ピッカーの要素を取得
+        if (input && summary.date) {
+          input.value = summary.date;
+        }
+
+        box.innerHTML += `
+            <div class="summary-block">
+              <div class="icon">✈️</div>
+              <div class="text">
+                <div class="label">総フライト記録数</div>
+                <div class="value">${summary.flight_count}便</div>
+              </div>
+            </div>
+
+            <div class="summary-block">
+              <div class="icon">🗺️</div>
+              <div class="text">
+                <div class="label">空見の丘公園(10nm)通過</div>
+                <div class="value">${summary.area_count2}便</div>
+              </div>
+            </div>
+
+            <div class="summary-block">
+              <div class="icon">⛰️</div>
+              <div class="text">
+                <div class="label">一番高いところを飛んでたのは</div>
+                <div class="value">${summary.max_flight}</b><span class="dim"> (${summary.max_altitude} ft)</div>
+              </div>
+            </div>
+
+            <div class="summary-block">
+              <div class="icon">🌟</div>
+              <div class="text">
+                <div class="label">今日の最終便対決</div>
+                <div class="value">ANA41のIKOMA通過：${summary.focus_info.ANA41.ikoma}</div>
+                <div class="value">JAL139のIKOMA通過：${summary.focus_info.JAL139.ikoma}</div>
+              </div>
+            </div>
+          `;
+        setTimeout(() => {
+          const input = document.getElementById("log-date-picker");
+          if (input) {
+            input.value = summary.date;
+          }
+        }, 100);
+      })
+      .catch((err) => {
+        console.error("Summary読み込み失敗:", err);
+        setTimeout(() => {
+          const input = document.getElementById("log-date-picker");
+          if (input) {
+            input.value = logDate;  // summaryがない場合は,urlの日付をセット　
+          }
+        }, 100);
+        const box = document.getElementById("summary-box");
+        box.innerHTML += `
+            <div class="summary-block">
+              <div class="icon">📦</div>
+              <div class="text">
+                <div class="label">Summaryデータがありません</div>
+              </div>
+            </div>
+          `;
+      });
+  </script>
+</body>
+
+</html>
