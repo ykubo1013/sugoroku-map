@@ -1,0 +1,19 @@
+{
+  "date": "2025-05-19",
+  "flight_count": 1119,
+  "area_count1": 246,
+  "area_count2": 209,
+  "max_flight": "LSI125",
+  "max_altitude": 44825,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:03 - 20:19",
+      "ikoma": "20:17"
+    },
+    "JAL139": {
+      "start_end": "20:02 - 20:27",
+      "ikoma": "20:24"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-05-19&style=custom&center=135.5,34.7&zoom=8"
+}

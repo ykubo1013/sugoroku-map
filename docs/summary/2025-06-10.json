@@ -1,0 +1,19 @@
+{
+  "date": "2025-06-10",
+  "flight_count": 1085,
+  "area_count1": 253,
+  "area_count2": 207,
+  "max_flight": "CPA509",
+  "max_altitude": 44950,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:10 - 20:52",
+      "ikoma": "20:49"
+    },
+    "JAL139": {
+      "start_end": "20:13 - 20:53",
+      "ikoma": "20:51"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-06-10&style=custom&center=135.5,34.7&zoom=8"
+}

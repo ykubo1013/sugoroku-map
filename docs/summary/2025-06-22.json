@@ -1,0 +1,19 @@
+{
+  "date": "2025-06-22",
+  "flight_count": 1121,
+  "area_count1": 240,
+  "area_count2": 196,
+  "max_flight": "JAL443",
+  "max_altitude": 44500,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:06 - 20:34",
+      "ikoma": "20:32"
+    },
+    "JAL139": {
+      "start_end": "20:09 - 20:27",
+      "ikoma": "20:25"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-06-22&style=custom&center=135.5,34.7&zoom=8"
+}

@@ -1,0 +1,19 @@
+{
+  "date": "2025-05-01",
+  "flight_count": 1128,
+  "area_count1": 250,
+  "area_count2": 193,
+  "max_flight": "QQE529",
+  "max_altitude": 44150,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:03 - 20:24",
+      "ikoma": "20:22"
+    },
+    "JAL139": {
+      "start_end": "19:56 - 20:11",
+      "ikoma": "20:09"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-05-01&style=custom&center=135.5,34.7&zoom=8"
+}

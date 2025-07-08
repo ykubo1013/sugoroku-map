@@ -1,0 +1,19 @@
+{
+  "date": "2025-05-11",
+  "flight_count": 1115,
+  "area_count1": 242,
+  "area_count2": 189,
+  "max_flight": "JAL96",
+  "max_altitude": 44850,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:12 - 20:46",
+      "ikoma": "20:44"
+    },
+    "JAL139": {
+      "start_end": "20:08 - 20:41",
+      "ikoma": "20:40"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-05-11&style=custom&center=135.5,34.7&zoom=8"
+}

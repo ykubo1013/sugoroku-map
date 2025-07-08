@@ -1,0 +1,19 @@
+{
+  "date": "2025-07-06",
+  "flight_count": 1121,
+  "area_count1": 273,
+  "area_count2": 197,
+  "max_flight": "THA661",
+  "max_altitude": 45000,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:00 - 20:27",
+      "ikoma": "20:25"
+    },
+    "JAL139": {
+      "start_end": "19:56 - 20:24",
+      "ikoma": "20:23"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-07-06&style=custom&center=135.5,34.7&zoom=8"
+}

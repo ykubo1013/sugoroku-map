@@ -1,0 +1,19 @@
+{
+  "date": "2025-05-24",
+  "flight_count": 1126,
+  "area_count1": 260,
+  "area_count2": 222,
+  "max_flight": "VPCOR",
+  "max_altitude": 45000,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:15 - 20:44",
+      "ikoma": "20:42"
+    },
+    "JAL139": {
+      "start_end": "20:05 - 20:40",
+      "ikoma": "20:38"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-05-24&style=custom&center=135.5,34.7&zoom=8"
+}

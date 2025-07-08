@@ -1,0 +1,19 @@
+{
+  "date": "2025-07-04",
+  "flight_count": 1142,
+  "area_count1": 275,
+  "area_count2": 219,
+  "max_flight": "VJT827",
+  "max_altitude": 44650,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "19:58 - 20:25",
+      "ikoma": "20:23"
+    },
+    "JAL139": {
+      "start_end": "19:55 - 20:18",
+      "ikoma": "20:15"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-07-04&style=custom&center=135.5,34.7&zoom=8"
+}

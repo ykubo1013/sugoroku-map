@@ -1,0 +1,19 @@
+{
+  "date": "2025-05-15",
+  "flight_count": 1132,
+  "area_count1": 267,
+  "area_count2": 210,
+  "max_flight": "TGW893",
+  "max_altitude": 44650,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:13 - 20:32",
+      "ikoma": "20:30"
+    },
+    "JAL139": {
+      "start_end": "20:01 - 20:24",
+      "ikoma": "20:23"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-05-15&style=custom&center=135.5,34.7&zoom=8"
+}

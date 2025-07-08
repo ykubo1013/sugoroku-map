@@ -1,0 +1,19 @@
+{
+  "date": "2025-05-02",
+  "flight_count": 1112,
+  "area_count1": 268,
+  "area_count2": 201,
+  "max_flight": "B652R",
+  "max_altitude": 44650,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:49 - 21:05",
+      "ikoma": "21:03"
+    },
+    "JAL139": {
+      "start_end": "記録なし",
+      "ikoma": "記録なし"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-05-02&style=custom&center=135.5,34.7&zoom=8"
+}

@@ -1,0 +1,19 @@
+{
+  "date": "2025-05-25",
+  "flight_count": 1131,
+  "area_count1": 252,
+  "area_count2": 188,
+  "max_flight": "GTI8863",
+  "max_altitude": 45000,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:15 - 20:45",
+      "ikoma": "20:42"
+    },
+    "JAL139": {
+      "start_end": "20:07 - 20:36",
+      "ikoma": "20:34"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-05-25&style=custom&center=135.5,34.7&zoom=8"
+}

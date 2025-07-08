@@ -1,0 +1,19 @@
+{
+  "date": "2025-06-18",
+  "flight_count": 1155,
+  "area_count1": 260,
+  "area_count2": 194,
+  "max_flight": "VPCJJ",
+  "max_altitude": 44750,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:11 - 20:35",
+      "ikoma": "20:33"
+    },
+    "JAL139": {
+      "start_end": "20:16 - 20:37",
+      "ikoma": "20:35"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-06-18&style=custom&center=135.5,34.7&zoom=8"
+}

@@ -1,0 +1,19 @@
+{
+  "date": "2025-07-02",
+  "flight_count": 1158,
+  "area_count1": 232,
+  "area_count2": 204,
+  "max_flight": "JA01BJ",
+  "max_altitude": 44850,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "19:58 - 20:30",
+      "ikoma": "20:28"
+    },
+    "JAL139": {
+      "start_end": "19:55 - 20:17",
+      "ikoma": "20:16"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-07-02&style=custom&center=135.5,34.7&zoom=8"
+}

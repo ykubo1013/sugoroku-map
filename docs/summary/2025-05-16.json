@@ -1,0 +1,19 @@
+{
+  "date": "2025-05-16",
+  "flight_count": 1133,
+  "area_count1": 259,
+  "area_count2": 195,
+  "max_flight": "N806HK",
+  "max_altitude": 44975,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:06 - 20:27",
+      "ikoma": "20:25"
+    },
+    "JAL139": {
+      "start_end": "20:10 - 20:31",
+      "ikoma": "20:30"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-05-16&style=custom&center=135.5,34.7&zoom=8"
+}

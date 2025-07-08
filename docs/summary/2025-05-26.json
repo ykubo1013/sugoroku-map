@@ -1,0 +1,19 @@
+{
+  "date": "2025-05-26",
+  "flight_count": 1146,
+  "area_count1": 248,
+  "area_count2": 207,
+  "max_flight": "N155GA",
+  "max_altitude": 45000,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:06 - 20:37",
+      "ikoma": "20:34"
+    },
+    "JAL139": {
+      "start_end": "20:03 - 20:28",
+      "ikoma": "20:26"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-05-26&style=custom&center=135.5,34.7&zoom=8"
+}

@@ -1,0 +1,19 @@
+{
+  "date": "2025-06-16",
+  "flight_count": 1165,
+  "area_count1": 263,
+  "area_count2": 191,
+  "max_flight": "SJX801",
+  "max_altitude": 44800,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:04 - 20:35",
+      "ikoma": "20:33"
+    },
+    "JAL139": {
+      "start_end": "20:06 - 20:40",
+      "ikoma": "20:37"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2025-06-16&style=custom&center=135.5,34.7&zoom=8"
+}
