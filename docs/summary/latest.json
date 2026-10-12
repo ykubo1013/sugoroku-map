@@ -1,19 +1,19 @@
 {
-  "date": "2026-10-11",
-  "flight_count": 1177,
-  "area_count1": 259,
-  "area_count2": 181,
-  "max_flight": "VJT762",
-  "max_altitude": 44625,
+  "date": "2026-10-12",
+  "flight_count": 1149,
+  "area_count1": 258,
+  "area_count2": 187,
+  "max_flight": "N333MB",
+  "max_altitude": 44750,
   "focus_info": {
     "ANA41": {
-      "start_end": "20:01 - 20:34",
-      "ikoma": "20:32"
+      "start_end": "20:10 - 20:30",
+      "ikoma": "20:28"
     },
     "JAL139": {
-      "start_end": "19:57 - 20:19",
-      "ikoma": "20:17"
+      "start_end": "19:51 - 20:14",
+      "ikoma": "20:12"
     }
   },
-  "map_url": "https://sugo-log.skyrail.tech/?log=2026-10-11&style=custom&center=135.5,34.7&zoom=8"
+  "map_url": "https://sugo-log.skyrail.tech/?log=2026-10-12&style=custom&center=135.5,34.7&zoom=8"
 }
