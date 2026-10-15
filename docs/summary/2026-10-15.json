@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-15",
+  "flight_count": 1150,
+  "area_count1": 253,
+  "area_count2": 179,
+  "max_flight": "TBJ25",
+  "max_altitude": 44850,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:14 - 20:38",
+      "ikoma": "20:35"
+    },
+    "JAL139": {
+      "start_end": "20:04 - 20:27",
+      "ikoma": "20:26"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2026-10-15&style=custom&center=135.5,34.7&zoom=8"
+}
