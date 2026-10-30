@@ -1,19 +1,19 @@
 {
-  "date": "2026-10-29",
-  "flight_count": 1156,
-  "area_count1": 257,
-  "area_count2": 180,
-  "max_flight": "PSFMV",
-  "max_altitude": 44450,
+  "date": "2026-10-30",
+  "flight_count": 1164,
+  "area_count1": 224,
+  "area_count2": 190,
+  "max_flight": "QQE252",
+  "max_altitude": 44650,
   "focus_info": {
     "ANA41": {
-      "start_end": "20:12 - 20:34",
-      "ikoma": "20:31"
+      "start_end": "20:09 - 20:35",
+      "ikoma": "20:33"
     },
     "JAL139": {
-      "start_end": "20:25 - 20:39",
-      "ikoma": "20:38"
+      "start_end": "20:21 - 20:50",
+      "ikoma": "20:48"
     }
   },
-  "map_url": "https://sugo-log.skyrail.tech/?log=2026-10-29&style=custom&center=135.5,34.7&zoom=8"
+  "map_url": "https://sugo-log.skyrail.tech/?log=2026-10-30&style=custom&center=135.5,34.7&zoom=8"
 }
