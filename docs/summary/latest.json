@@ -1,19 +1,19 @@
 {
-  "date": "2026-11-20",
-  "flight_count": 1135,
-  "area_count1": 250,
-  "area_count2": 170,
-  "max_flight": "N302AG",
-  "max_altitude": 43350,
+  "date": "2026-11-21",
+  "flight_count": 1130,
+  "area_count1": 263,
+  "area_count2": 193,
+  "max_flight": "VJT731",
+  "max_altitude": 44450,
   "focus_info": {
     "ANA41": {
-      "start_end": "記録なし",
-      "ikoma": "記録なし"
+      "start_end": "20:39 - 20:57",
+      "ikoma": "未通過"
     },
     "JAL139": {
-      "start_end": "20:33 - 21:06",
-      "ikoma": "21:04"
+      "start_end": "20:29 - 21:03",
+      "ikoma": "21:00"
     }
   },
-  "map_url": "https://sugo-log.skyrail.tech/?log=2026-11-20&style=custom&center=135.5,34.7&zoom=8"
+  "map_url": "https://sugo-log.skyrail.tech/?log=2026-11-21&style=custom&center=135.5,34.7&zoom=8"
 }
