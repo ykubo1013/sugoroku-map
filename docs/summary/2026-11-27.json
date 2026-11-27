@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-27",
+  "flight_count": 1201,
+  "area_count1": 259,
+  "area_count2": 185,
+  "max_flight": "VJT792",
+  "max_altitude": 44250,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:00 - 20:28",
+      "ikoma": "20:27"
+    },
+    "JAL139": {
+      "start_end": "20:25 - 20:47",
+      "ikoma": "20:45"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2026-11-27&style=custom&center=135.5,34.7&zoom=8"
+}
