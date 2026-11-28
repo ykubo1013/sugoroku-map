@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-28",
+  "flight_count": 1134,
+  "area_count1": 245,
+  "area_count2": 176,
+  "max_flight": "T788999",
+  "max_altitude": 44125,
+  "focus_info": {
+    "ANA41": {
+      "start_end": "20:32 - 21:00",
+      "ikoma": "20:57"
+    },
+    "JAL139": {
+      "start_end": "20:47 - 21:00",
+      "ikoma": "未通過"
+    }
+  },
+  "map_url": "https://sugo-log.skyrail.tech/?log=2026-11-28&style=custom&center=135.5,34.7&zoom=8"
+}
